@@ -1,8 +1,8 @@
 #include <iostream>
 
-//#ifdef __CUDACC__
+// #ifdef __CUDACC__
     #include <cuda_runtime.h>
-//#endif
+// #endif
 
 #include "matrix.h"
 #include "matmul.h"
@@ -40,7 +40,7 @@ void print_cuda_devices() {
 //#endif
 }
 
-void matmul() {
+void matmul(bool compare) {
     std::cout << "----------BEGIN CPU MULTIPLICATION----------" << std::endl;
     std::cout << "\t[M] Dimensions: w=" << pmpp::M_WIDTH << ", h=" << pmpp::M_HEIGHT << std::endl;
     std::cout << "\t[N] Dimensions: w=" << pmpp::N_WIDTH << ", h=" << pmpp::N_HEIGHT << std::endl;
@@ -98,12 +98,12 @@ void matmul() {
     // the precision of the cpu floats and gpu floats don't match, so every field that doesn't contain a "round" number
     // is outputted...
     // for big matrices this takes a long time, so I have omitted this, so I can run the program without
-    // waiting half an hour for it to finish printing.
-#ifdef MM_DO_COMPARISON
-    matrix_compare_cpu(solution_CPU, solution_GPU);
-#else
-    std::cout << "\tElement comparison is disabled. Please define 'MM_DO_COMPARISON' to enable element comparison" << std::endl;
-#endif
+    // waiting half an hour for it to finish printing. THANKS A LOT rounding error of fma great job smh...
+    if (compare) {
+        matrix_compare_cpu(solution_CPU, solution_GPU);
+    } else {
+        std::cout << "\tElement comparison is disabled. Please run with parameter 'compare' to enable element comparison" << std::endl;
+    }
 
     std::cout << "----------CLEANUP----------" << std::endl;
     cudaEventDestroy(evStart);

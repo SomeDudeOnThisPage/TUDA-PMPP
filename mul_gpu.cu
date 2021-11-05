@@ -1,11 +1,10 @@
 #include <cuda_runtime.h>
-
-// NOTE: if you include stdio.h, you can use printf inside your kernel
-
 #include "common.h"
 #include "matrix.h"
 #include "mul_gpu.h"
-#include "stdio.h"
+#ifdef CRAPPY_DEBUG
+    #include "stdio.h"
+#endif
 
 /**
  * Returns the global x-thread-id.
@@ -43,13 +42,19 @@ __device__ void put_pitched_memory_float(const float* elements, unsigned int pit
 // NOTE: This is stupidly inefficient. Multiplying two 10000x10000 matrices takes 32s on my rtx2070!!!!!!!!!!!
 // Thirty. Two. Seconds.
 // I mean sure because there's absolutely no shared memory usage but still...
-__global__ void matrix_mul_gpu_kernel(GPUMatrix m, GPUMatrix n, GPUMatrix p) {
-    float sum = 0;
+__global__ void matrix_mul_gpu_kernel(const GPUMatrix m, const GPUMatrix n, const GPUMatrix p) {
+    float sum = 0.0f;
     if (tidx() < p.height && tidy() < p.width) { // only do a calculation if our thread index is inside our p-matrix
-        for (int i = 0; i < m.width; i++) {
+        for (unsigned int i = 0; i < m.width; i++) {
+            // get i'th column's element in the row of tidx of matrix m
             float data_m = get_pitched_memory_float(m.elements, m.pitch, tidx(), i);
+            // get i'th row's element in the column of tidy of matrix n
+            // I'm unsure whether this causes bank conflicts or not, but because I use block-sizes of multiples
+            // of 32 I shouldn't get multiple reads from the same bank in one warp in this case? IDK.
             float data_n = get_pitched_memory_float(n.elements, n.pitch, i, tidy());
-            sum += data_m * data_n;
+            // sum = __fmaf_ieee_rn(data_m, data_n, sum);       // with fma
+            // sum = __fadd_rn(sum, __fmul_rn(data_m, data_n)); // without fma
+            sum += data_m * data_n;                             // with fma
         }
         put_pitched_memory_float(p.elements, p.pitch, tidx(), tidy(), sum);
     }
@@ -58,7 +63,7 @@ __global__ void matrix_mul_gpu_kernel(GPUMatrix m, GPUMatrix n, GPUMatrix p) {
     // debug check when computing an identity matrix, as matrix field [tidx][tidy] must always be 1 when multiplying
     // two identity matrices (obviously this only applies when the thread handling this is inside the matrix
     // dimensions, otherwise the result is garbage or (more often than not) 0)
-    // TLDR: if this outputs all one's when multiplying Ident*Ident we're good
+    // TLDR: if this outputs all 1s when multiplying Ident*Ident we're good
     if (tidx() == tidy()) {
         printf("[%d, %d] => %f\n", tidx(), tidy(), sum);
     }
