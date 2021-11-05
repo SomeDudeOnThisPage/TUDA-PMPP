@@ -1,16 +1,12 @@
 project(MatMul CXX CUDA)
 cmake_minimum_required(VERSION 3.8)
 
-# uncomment the next line if you want to compare CPU and GPU solutions, but be warned, as the printing takes a long time
-# for larger matrices...
-#   add_compile_definitions(MM_DO_COMPARISON)
-#
 # Temporary debug stuff...
 #   add_compile_definitions(CRAPPY_DEBUG)
 #
 # Path to CUDA includes.
-include_directories("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.5/include") # my local machine
-# include_directories("/usr/local/cuda/include") # lab pcs
+# include_directories("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.5/include") # my local machine
+include_directories("/usr/local/cuda/include") # lab pcs
 
 # Set the default build type
 if(NOT CMAKE_BUILD_TYPE)
