@@ -6,6 +6,7 @@
 
 #include "common.h"
 #include "matrix.h"
+#include "test.h"
 
 
 CPUMatrix matrix_alloc_cpu(int width, int height) {
@@ -56,15 +57,12 @@ void matrix_compare_cpu(const CPUMatrix &a, const CPUMatrix &b) {
     }
 
     bool mismatch = false;
-    for (int i = 0; i < a.width; i++) {
-        for (int j = 0; j < a.height; j++) {
-            if (a.elements[i * a.width + j] != b.elements[i * b.width + j]) {
-                std::cerr << std::setprecision(10) << "[COMPARE] [" << i << "][" << j << "] mismatch: CPU="
-                << a.elements[i * a.width + j] << ", GPU="
-                << b.elements[i * b.width + j] << std::endl;
-
-                mismatch = true;
-            }
+    for (int i = 0; i < pmpp::P_WIDTH * pmpp::P_HEIGHT; i++) {
+        if (a.elements[i] != b.elements[i]) {
+            std::cerr << std::setprecision(10) << "[COMPARE] [" << i << "] mismatch: CPU="
+            << a.elements[i] << ", GPU="
+            << b.elements[i] << std::endl;
+            mismatch = true;
         }
     }
 
