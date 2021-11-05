@@ -5,12 +5,15 @@
 #include "test.h"
 
 int main(int argc, char **argv) {
-    bool random, compare = false;
+    bool random = false;
+    bool compare = false;
 
     for (int i = 1; i < argc; i++) {
         if (argv[i] == std::string("random")) {
+            std::cout << "using random" << std::endl;
             random = true;
         } else if (argv[i] == std::string("compare")) {
+            std::cout << "using compare" << std::endl;
             compare = true;
         }
     }

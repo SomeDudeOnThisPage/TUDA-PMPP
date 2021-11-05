@@ -58,10 +58,10 @@ void matrix_compare_cpu(const CPUMatrix &a, const CPUMatrix &b) {
     bool mismatch = false;
     for (int i = 0; i < a.width; i++) {
         for (int j = 0; j < a.height; j++) {
-            if (a.elements[i * a.width + j] != b.elements[i * a.width + j]) {
+            if (a.elements[i * a.width + j] != b.elements[i * b.width + j]) {
                 std::cerr << std::setprecision(10) << "[COMPARE] [" << i << "][" << j << "] mismatch: CPU="
                 << a.elements[i * a.width + j] << ", GPU="
-                << b.elements[i * a.width + j] << std::endl;
+                << b.elements[i * b.width + j] << std::endl;
 
                 mismatch = true;
             }
