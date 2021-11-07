@@ -28,7 +28,7 @@ GPUMatrix matrix_alloc_gpu(int width, int height) {
     size_t pitch = 0;
     cudaMallocPitch((void**)&m.elements, &pitch, width * sizeof(float), height); CUDA_CHECK_ERROR;
 #ifdef CRAPPY_DEBUG
-    std::cout << "PITCH=" << pitch << std::endl;
+    std::cout << "PITCH=" << m.pitch << std::endl;
 #endif
     m.pitch = pitch;
 

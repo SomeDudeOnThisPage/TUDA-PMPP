@@ -14,7 +14,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Testing stuff...
-# set(CMAKE_CUDA_FLAGS "-ftz=false -prec-div=true -prec-sqrt=true")
+# set(CMAKE_CUDA_FLAGS "--relocatable-device-code=true")
 
 # Specify the files that need to be compiled and linked.
 # This will create an executable named 'matmul'.

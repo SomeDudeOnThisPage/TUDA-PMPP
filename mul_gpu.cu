@@ -2,6 +2,7 @@
 #include "common.h"
 #include "matrix.h"
 #include "mul_gpu.h"
+
 #ifdef CRAPPY_DEBUG
     #include "stdio.h"
 #endif
@@ -31,12 +32,14 @@ __device__ unsigned int tidy() {
  * @param pos
  * @return
  */
-__device__ float get_pitched_memory_float(const float* elements, unsigned int pitch, unsigned int row, unsigned int column) {
-    return ((float*) ((char*) elements + row * pitch))[column];
+template <typename T>
+__device__ T get_pitched_memory(const T* elements, unsigned int pitch, unsigned int row, unsigned int column) {
+    return ((T*) ((uint8_t*) elements + row * pitch))[column];
 }
 
-__device__ void put_pitched_memory_float(const float* elements, unsigned int pitch, unsigned int row, unsigned int column, float data) {
-    ((float*) ((char*) elements + row * pitch))[column] = data;
+template <typename T>
+__device__ void put_pitched_memory(const T* elements, unsigned int pitch, unsigned int row, unsigned int column, T data) {
+    ((T*) ((uint8_t*) elements + row * pitch))[column] = data;
 }
 
 // NOTE: This is stupidly inefficient. Multiplying two 10000x10000 matrices takes 32s on my rtx2070!!!!!!!!!!!
@@ -47,16 +50,16 @@ __global__ void matrix_mul_gpu_kernel(const GPUMatrix m, const GPUMatrix n, cons
     if (tidx() < p.height && tidy() < p.width) { // only do a calculation if our thread index is inside our p-matrix
         for (unsigned int i = 0; i < m.width; i++) {
             // get i'th column's element in the row of tidx of matrix m
-            float data_m = get_pitched_memory_float(m.elements, m.pitch, tidx(), i);
+            auto data_m = get_pitched_memory<float>(m.elements, m.pitch, tidx(), i);
             // get i'th row's element in the column of tidy of matrix n
             // I'm unsure whether this causes bank conflicts or not, but because I use block-sizes of multiples
             // of 32 I shouldn't get multiple reads from the same bank in one warp in this case? IDK.
-            float data_n = get_pitched_memory_float(n.elements, n.pitch, i, tidy());
+            auto data_n = get_pitched_memory<float>(n.elements, n.pitch, i, tidy());
             // sum = __fmaf_ieee_rn(data_m, data_n, sum);       // with fma
             // sum = __fadd_rn(sum, __fmul_rn(data_m, data_n)); // without fma
             sum += data_m * data_n;                             // with fma
         }
-        put_pitched_memory_float(p.elements, p.pitch, tidx(), tidy(), sum);
+        put_pitched_memory<float>(p.elements, p.pitch, tidx(), tidy(), sum);
     }
 
 #ifdef CRAPPY_DEBUG
