@@ -16,7 +16,9 @@ image_gpu::image_gpu(int w, int h) : width(w), height(h) {
     cudaMallocPitch((void**) &this->data, &this->pitch, w * sizeof(float), h);
     CUDA_CHECK_ERROR;
 
+#ifdef CRAPPY_DEBUG
     std::cout << "ALLOCATION " << w << " " << h << " PITCH " << this->pitch << std::endl;
+#endif
 }
 
 image_gpu::~image_gpu() {
