@@ -94,7 +94,7 @@ void filtering(const char *imgfile, int ks) {
     upload_filterkernel(base_filterkernel); // Upload filterkernel to const memory once.
 
     // === Task 1 ===
-    float cpu_time = 0.0f;//filter_cpu(base_image, base_filterkernel);
+    float cpu_time = filter_cpu(base_image, base_filterkernel);
 
 	// === Task 2 ===
     float gpu_gmem_time = filter_gpu_global_memory(base_image, base_filterkernel, false, "out_gpu_gmem");
