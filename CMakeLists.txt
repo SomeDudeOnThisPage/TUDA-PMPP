@@ -1,8 +1,8 @@
 project(filtering CXX CUDA)
 cmake_minimum_required(VERSION 3.8)
 
-# include_directories("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.5/include") # my local machine
-include_directories("usr/local/cuda/include")
+include_directories("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.5/include") # my local machine
+# include_directories("/usr/local/cuda/include")
 
 # Set the default build type
 if(NOT CMAKE_BUILD_TYPE)

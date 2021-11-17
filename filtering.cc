@@ -94,7 +94,7 @@ void filtering(const char *imgfile, int ks) {
     upload_filterkernel(base_filterkernel); // Upload filterkernel to const memory once.
 
     // === Task 1 ===
-    float cpu_time = filter_cpu(base_image, base_filterkernel);
+    float cpu_time = 0.0f;//filter_cpu(base_image, base_filterkernel);
 
 	// === Task 2 ===
     float gpu_gmem_time = filter_gpu_global_memory(base_image, base_filterkernel, false, "out_gpu_gmem");
@@ -116,8 +116,8 @@ void filtering(const char *imgfile, int ks) {
     // quick and dirty latex formatting
     std::cout << cpu_time << " & " << gpu_gmem_time << " & " << gpu_smem_time << " & " << gpu_cmem_time << " & " << gpu_all_time << " \\\\" << std::endl;
 #endif
-    std::cout << "CPU:\t\t\t" << cpu_time << "ms\n"
-              << "GPU - GLOBAL\t: " << gpu_gmem_time << "ms\n"
+    std::cout << "CPU:\t" << cpu_time << "ms\n"
+              << "GPU - GLOBAL:\t" << gpu_gmem_time << "ms\n"
               << "GPU - SHARED:\t" << gpu_smem_time << "ms\n"
               << "GPU - CONSTANT:\t" << gpu_cmem_time << "ms\n"
               << "GPU - ALL:\t" << gpu_all_time << "ms\n"

@@ -60,14 +60,14 @@ __global__ void conv_h_gpu_smem_kernel(const image_gpu dst, const image_gpu src,
 
     if (threadIdx.x < ks_half) { // Load left apron pixel (or clamp to edge).
         s_data[threadIdx.y][threadIdx.x] = (tidx - ks_half >= 0)
-           ? util::get_pitched_memory<unsigned int>(src.data, src.pitch, tidy, tidx - ks_half)
-           : util::get_pitched_memory<unsigned int>(src.data, src.pitch, tidy, 0);
+                                           ? util::get_pitched_memory<unsigned int>(src.data, src.pitch, tidy, tidx - ks_half)
+                                           : util::get_pitched_memory<unsigned int>(src.data, src.pitch, tidy, 0);
     }
 
     if (base >= blockDim.x) { // Load right apron pixel (or clamp to edge).
         s_data[threadIdx.y][(unsigned int) (base + ks_half)] = (tidx + ks_half < src.width)
-            ? util::get_pitched_memory<unsigned int>(src.data, src.pitch, tidy, tidx + ks_half)
-            : util::get_pitched_memory<unsigned int>(src.data, src.pitch, tidy, src.width - 1);
+                                                               ? util::get_pitched_memory<unsigned int>(src.data, src.pitch, tidy, tidx + ks_half)
+                                                               : util::get_pitched_memory<unsigned int>(src.data, src.pitch, tidy, src.width - 1);
     }
 
     // Load actual pixel.
@@ -80,12 +80,10 @@ __global__ void conv_h_gpu_smem_kernel(const image_gpu dst, const image_gpu src,
         // add up from -ks/2 to +ks/2 with origin as current pixel defined by tid
         for (int i = 0; i < kernel.ks; i++) {
             int x_offset = (threadIdx.x + ks_half + (i - kernel.ks / 2));
-            x_offset = min(x_offset, 0);
+            x_offset = max(x_offset, 0);
 
             // bank conflicts
-            unsigned int data = (x_offset < 0 || x_offset > src.width - 1)
-                                ? 0
-                                : s_data[threadIdx.y][x_offset];
+            unsigned int data = s_data[threadIdx.y][x_offset];
             // __syncwarp() // I was hoping this would fix the bank conflicts but nooooo
             util::convolute(data, (const_kernel) ? c_kernel_data[i] : kernel.data[i], &r, &g, &b);
         }
@@ -106,8 +104,8 @@ __global__ void conv_v_gpu_smem_kernel(const image_gpu dst, const image_gpu src,
 
     if (threadIdx.y < ks_half) { // Load upper apron pixel (or clamp to edge).
         s_data[threadIdx.x][threadIdx.y] = (tidy - ks_half >= 0)
-           ? util::get_pitched_memory<unsigned int>(src.data, src.pitch, tidy - ks_half, tidx)
-           : util::get_pitched_memory<unsigned int>(src.data, src.pitch, 0, tidx);
+            ? util::get_pitched_memory<unsigned int>(src.data, src.pitch, tidy - ks_half, tidx)
+            : util::get_pitched_memory<unsigned int>(src.data, src.pitch, 0, tidx);
     }
 
     if (base >= blockDim.y) { // Load lower apron pixel (or clamp to edge).
@@ -125,12 +123,10 @@ __global__ void conv_v_gpu_smem_kernel(const image_gpu dst, const image_gpu src,
     if (tidx < src.width && util::tidy() < src.height) {
         for (int i = 0; i < kernel.ks; i++) {
             int y_offset = (threadIdx.y + ks_half + (i - kernel.ks / 2));
-            y_offset = min(y_offset, 0);
+            y_offset = max(y_offset, 0);
 
             // bank conflicts
-            unsigned int data = (y_offset < 0 || y_offset > src.height - 1)
-                    ? 0
-                   : s_data[threadIdx.x][y_offset];
+            unsigned int data = s_data[threadIdx.x][y_offset];
             // __syncwarp() // I was hoping this would fix the bank conflicts but nooooo
             util::convolute(data, (const_kernel) ? c_kernel_data[i] : kernel.data[i], &r, &g, &b);
         }
